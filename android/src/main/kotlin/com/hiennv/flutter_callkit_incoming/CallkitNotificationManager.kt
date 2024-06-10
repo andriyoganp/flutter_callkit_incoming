@@ -22,7 +22,6 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.text.TextUtils
-import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import androidx.appcompat.app.AlertDialog
@@ -71,10 +70,10 @@ class CallkitNotificationManager(private val context: Context) {
     @SuppressLint("MissingPermission")
     private var targetLoadAvatarCustomize = object : Target {
         override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
-            notificationViews?.setImageViewBitmap(R.id.ivAvatar, bitmap)
-            notificationViews?.setViewVisibility(R.id.ivAvatar, View.VISIBLE)
-            notificationSmallViews?.setImageViewBitmap(R.id.ivAvatar, bitmap)
-            notificationSmallViews?.setViewVisibility(R.id.ivAvatar, View.VISIBLE)
+            notificationViews?.setImageViewBitmap(R.id.image_avatar, bitmap)
+            notificationViews?.setViewVisibility(R.id.image_avatar, View.VISIBLE)
+            notificationSmallViews?.setImageViewBitmap(R.id.image_avatar, bitmap)
+            notificationSmallViews?.setViewVisibility(R.id.image_avatar, View.VISIBLE)
             getNotificationManager().notify(notificationId, notificationBuilder.build())
         }
 
@@ -127,16 +126,13 @@ class CallkitNotificationManager(private val context: Context) {
         )
         notificationBuilder.setContentIntent(getActivityPendingIntent(notificationId, data))
         notificationBuilder.setDeleteIntent(getTimeOutPendingIntent(notificationId, data))
-        val typeCall = data.getInt(CallkitConstants.EXTRA_CALLKIT_TYPE, -1)
-        var smallIcon = context.applicationInfo.icon
-        if (typeCall > 0) {
-            smallIcon = R.drawable.ic_video
+        val smallIcon = data.getString(CallkitConstants.EXTRA_CALLKIT_SMALL_ICON, "")
+        val smallIconResource: Int = if (smallIcon.isNotBlank()) {
+            context.resources.getIdentifier(smallIcon, "drawable", context.packageName)
         } else {
-            if (smallIcon >= 0) {
-                smallIcon = R.drawable.ic_accept
-            }
+            context.applicationInfo.icon
         }
-        notificationBuilder.setSmallIcon(smallIcon)
+        notificationBuilder.setSmallIcon(smallIconResource)
         val actionColor = data.getString(CallkitConstants.EXTRA_CALLKIT_ACTION_COLOR, "#4CAF50")
         try {
             notificationBuilder.color = Color.parseColor(actionColor)
@@ -150,7 +146,7 @@ class CallkitNotificationManager(private val context: Context) {
             data.getBoolean(CallkitConstants.EXTRA_CALLKIT_IS_CUSTOM_SMALL_EX_NOTIFICATION, false)
         if (isCustomNotification) {
             notificationViews =
-                RemoteViews(context.packageName, R.layout.layout_custom_notification)
+                RemoteViews(context.packageName, R.layout.view_call_notiification)
             initNotificationViews(notificationViews!!, data)
 
             if ((Build.MANUFACTURER.equals(
@@ -159,11 +155,11 @@ class CallkitNotificationManager(private val context: Context) {
                 ) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) || isCustomSmallExNotification
             ) {
                 notificationSmallViews =
-                    RemoteViews(context.packageName, R.layout.layout_custom_small_ex_notification)
+                    RemoteViews(context.packageName, R.layout.view_call_notiification_heads_up)
                 initNotificationViews(notificationSmallViews!!, data)
             } else {
                 notificationSmallViews =
-                    RemoteViews(context.packageName, R.layout.layout_custom_small_notification)
+                    RemoteViews(context.packageName, R.layout.view_call_notiification_heads_up)
                 initNotificationViews(notificationSmallViews!!, data)
             }
 
@@ -213,33 +209,38 @@ class CallkitNotificationManager(private val context: Context) {
 
     private fun initNotificationViews(remoteViews: RemoteViews, data: Bundle) {
         remoteViews.setTextViewText(
-            R.id.tvNameCaller,
+            R.id.text_title,
             data.getString(CallkitConstants.EXTRA_CALLKIT_NAME_CALLER, "")
         )
         val isShowCallID = data?.getBoolean(CallkitConstants.EXTRA_CALLKIT_IS_SHOW_CALL_ID, false)
         if (isShowCallID == true) {
             remoteViews.setTextViewText(
-                R.id.tvNumber,
+                R.id.text_title,
                 data.getString(CallkitConstants.EXTRA_CALLKIT_HANDLE, "")
             )
         }
         remoteViews.setOnClickPendingIntent(
-            R.id.llDecline,
+            R.id.view_decline,
             getDeclinePendingIntent(notificationId, data)
         )
         val textDecline = data.getString(CallkitConstants.EXTRA_CALLKIT_TEXT_DECLINE, "")
         remoteViews.setTextViewText(
-            R.id.tvDecline,
+            R.id.text_decline,
             if (TextUtils.isEmpty(textDecline)) context.getString(R.string.text_decline) else textDecline
         )
         remoteViews.setOnClickPendingIntent(
-            R.id.llAccept,
+            R.id.view_accept,
             getAcceptPendingIntent(notificationId, data)
         )
         val textAccept = data.getString(CallkitConstants.EXTRA_CALLKIT_TEXT_ACCEPT, "")
         remoteViews.setTextViewText(
-            R.id.tvAccept,
+            R.id.text_accept,
             if (TextUtils.isEmpty(textAccept)) context.getString(R.string.text_accept) else textAccept
+        )
+        val isVideo = data.getInt(CallkitConstants.EXTRA_CALLKIT_TYPE, -1) > 0
+        remoteViews.setImageViewResource(
+            R.id.image_accept,
+            if (isVideo) R.drawable.ic_video_call else R.drawable.ic_accept_call
         )
         val avatarUrl = data.getString(CallkitConstants.EXTRA_CALLKIT_AVATAR, "")
         if (avatarUrl != null && avatarUrl.isNotEmpty()) {

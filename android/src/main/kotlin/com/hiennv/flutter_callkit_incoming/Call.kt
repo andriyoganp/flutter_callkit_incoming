@@ -54,6 +54,8 @@ data class Data(val args: Map<String, Any?>) {
     var backgroundUrl: String
     @JsonProperty("textColor")
     var textColor: String
+    @JsonProperty("smallIcon")
+    var smallIcon: String
     @JsonProperty("actionColor")
     var actionColor: String
     @JsonProperty("incomingCallNotificationChannelName")
@@ -97,6 +99,8 @@ data class Data(val args: Map<String, Any?>) {
         backgroundUrl = android["backgroundUrl"] as? String ?: ""
         actionColor = android["actionColor"] as? String ?: "#4CAF50"
         textColor = android["textColor"] as? String ?: "#ffffff"
+        smallIcon = android["smallIcon"] as? String ?: ""
+
         incomingCallNotificationChannelName =
             android["incomingCallNotificationChannelName"] as? String
         missedCallNotificationChannelName = android["missedCallNotificationChannelName"] as? String
@@ -200,6 +204,7 @@ data class Data(val args: Map<String, Any?>) {
             backgroundUrl
         )
         bundle.putString(CallkitConstants.EXTRA_CALLKIT_TEXT_COLOR, textColor)
+        bundle.putString(CallkitConstants.EXTRA_CALLKIT_SMALL_ICON, smallIcon)
         bundle.putString(CallkitConstants.EXTRA_CALLKIT_ACTION_COLOR, actionColor)
         bundle.putString(CallkitConstants.EXTRA_CALLKIT_ACTION_FROM, from)
         bundle.putString(
@@ -289,6 +294,10 @@ data class Data(val args: Map<String, Any?>) {
             data.textColor = bundle.getString(
                 CallkitConstants.EXTRA_CALLKIT_TEXT_COLOR,
                 "#FFFFFF"
+            )
+            data.smallIcon = bundle.getString(
+                CallkitConstants.EXTRA_CALLKIT_SMALL_ICON,
+                ""
             )
             data.from =
                 bundle.getString(CallkitConstants.EXTRA_CALLKIT_ACTION_FROM, "")

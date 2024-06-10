@@ -15,6 +15,7 @@ class AndroidParams {
     this.backgroundUrl,
     this.actionColor,
     this.textColor,
+    this.smallIcon,
     this.incomingCallNotificationChannelName,
     this.missedCallNotificationChannelName,
     this.isShowFullLockedScreen,
@@ -46,6 +47,9 @@ class AndroidParams {
 
   /// Color used for the text in the full screen notification
   final String? textColor;
+
+  /// Custom icon on notification, put file into /android/app/src/main/res/mipmap or /android/app/src/main/res/drawable -> value: `@drawable/ic_notification`
+  final String? smallIcon;
 
   /// Notification channel name of incoming call.
   final String? incomingCallNotificationChannelName;
